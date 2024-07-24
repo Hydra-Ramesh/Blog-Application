@@ -1,38 +1,50 @@
 import './App.css';
-import React, {useState, useEffect} from 'react';
-import {useDispatch } from'react-redux';
-import authService from './appwrite/auth.js'
-import {login, logout} from './store/authSlice.js'
-import {Header, Footer} from './components'
-import {Outlet} from'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import authService from './appwrite/auth.js';
+import { login, logout } from './store/authSlice.js';
+import { Header, Footer } from './components';
+import { Outlet } from 'react-router-dom';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    authService.getCurrentUser()
-    .then((userData) => {
-      if (userData) {
-        dispatch(login({userData}))
-      } else {
-        dispatch(logout())
+    const checkUser = async () => {
+      try {
+        const userData = await authService.getCurrentUser();
+        if (userData) {
+          dispatch(login({ userData }));
+        } else {
+          dispatch(logout());
+        }
+      } catch (error) {
+        console.error('Failed to fetch user data', error);
+        dispatch(logout());
+      } finally {
+        setLoading(false);
       }
-    })
-    .finally(() => setLoading(false))
-  }, [])
-  
-  return !loading ? (
+    };
+
+    checkUser();
+  }, [dispatch]);
+
+  if (loading) {
+    return null;
+  }
+
+  return (
     <div className='min-h-screen flex flex-wrap content-between bg-gray-400'>
       <div className='w-full block'>
         <Header />
         <main>
-        TODO:  <Outlet />
+          <Outlet />
         </main>
         <Footer />
       </div>
     </div>
-  ) : null
+  );
 }
 
-export default App
+export default App;

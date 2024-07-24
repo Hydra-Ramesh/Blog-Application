@@ -1,24 +1,25 @@
 import config from '../config/config.js';
-import {Client, ID, Storage, Quary} from '@appwrite/sdk-for-js';
+import { Client, ID, Storage, Query, Databases } from 'appwrite';
 
-
-export class Service{
-    client =new Client();
+export class Service {
+    client = new Client();
     databases;
     storage;
-    constructor(){
+
+    constructor() {
         this.client
             .setEndpoint(config.appwriteUrl)
-            .setEndpointKey(config.appwriteProjectId);
-        this.databases = new Storage(this.client);
+            .setProject(config.appwriteProjectId); // Corrected from setEndpointKey to setProject
+        this.databases = new Databases(this.client); // Corrected to use Databases class
         this.storage = new Storage(this.client);
     }
-    async createPost({title, slug, content, featureImage, status, userId}){
-        try{
+
+    async createPost({ title, slug, content, featureImage, status, userId }) {
+        try {
             return await this.databases.createDocument(
                 config.appwriteDatabaseId,
                 config.appwriteCollectionId,
-                slug,
+                ID.unique(), // Generating unique ID for document
                 {
                     title,
                     content,
@@ -26,13 +27,14 @@ export class Service{
                     status,
                     userId,
                 }
-            )
-        }catch(error){
+            );
+        } catch (error) {
             throw error;
         }
     }
-    async updatePost(slug,{title, content, featureImage, status}){
-        try{
+
+    async updatePost(slug, { title, content, featureImage, status }) {
+        try {
             return await this.databases.updateDocument(
                 config.appwriteDatabaseId,
                 config.appwriteCollectionId,
@@ -43,80 +45,80 @@ export class Service{
                     featureImage,
                     status,
                 }
-            )
-        }catch(error){
+            );
+        } catch (error) {
             throw error;
         }
     }
-    async deletePost(slug){
-        try{
-            return await this.databases.deleteDocument(
+
+    async deletePost(slug) {
+        try {
+            await this.databases.deleteDocument(
                 config.appwriteDatabaseId,
                 config.appwriteCollectionId,
                 slug
-            )
+            );
             return true;
-        }catch(error){
+        } catch (error) {
             throw error;
-            return false;
         }
     }
-    async getPost(slug){
-        try{
+
+    async getPost(slug) {
+        try {
             return await this.databases.getDocument(
                 config.appwriteDatabaseId,
                 config.appwriteCollectionId,
                 slug
-            )
-        }catch(error){
+            );
+        } catch (error) {
             throw error;
         }
     }
-    async getAllPosts(queries = [Quary.equals('status', 'active')]){
-        try{
-            return await this.databases.searchDocuments(
+
+    async getAllPosts(queries = [Query.equal('status', 'active')]) {
+        try {
+            return await this.databases.listDocuments(
                 config.appwriteDatabaseId,
                 config.appwriteCollectionId,
-                queries,
-            )
-
-        }catch(error){
+                queries
+            );
+        } catch (error) {
             throw error;
-            return false;
         }
     }
-    async uploadFile(file){
-        try{
+
+    async uploadFile(file) {
+        try {
             return await this.storage.createFile(
                 config.appwriteBucketId,
                 ID.unique(),
                 file
-            )
-        }catch(error){
+            );
+        } catch (error) {
             throw error;
-            return false;
         }
     }
-    async deleteFile(fileId){
-        try{
+
+    async deleteFile(fileId) {
+        try {
             await this.storage.deleteFile(
                 config.appwriteBucketId,
                 fileId
-            )
-        }catch(error){
+            );
+            return true;
+        } catch (error) {
             throw error;
-            return false;
         }
     }
-    async getFilePreview(fileId){
+
+    async getFilePreview(fileId) {
         return this.storage.getFilePreview(
             config.appwriteBucketId,
-            fileId,
-        )
+            fileId
+        );
     }
 }
-const service =new Service();
+
+const service = new Service();
 export default Service;
-
-
-
