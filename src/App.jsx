@@ -20,7 +20,6 @@ function App() {
           dispatch(logout());
         }
       } catch (error) {
-        console.error('Failed to fetch user data', error);
         dispatch(logout());
       } finally {
         setLoading(false);

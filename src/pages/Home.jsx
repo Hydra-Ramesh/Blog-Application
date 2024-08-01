@@ -16,7 +16,6 @@ function Home() {
                 }
             } catch (err) {
                 setError('Failed to fetch posts');
-                console.error('Error fetching posts:', err);
             } finally {
                 setLoading(false);
             }
